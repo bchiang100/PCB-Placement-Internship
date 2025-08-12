@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/Users/bryanchiang/Documents/PCB-Placement-Internship/build",
+  "command": "/usr/bin/clang++  -I/Users/bryanchiang/Documents/PCB-Placement-Internship/include -g -arch arm64 -o CMakeFiles/fplib.dir/src/fplib.cpp.o -c /Users/bryanchiang/Documents/PCB-Placement-Internship/src/fplib.cpp",
+  "file": "/Users/bryanchiang/Documents/PCB-Placement-Internship/src/fplib.cpp",
+  "output": "CMakeFiles/fplib.dir/src/fplib.cpp.o"
+},
+{
+  "directory": "/Users/bryanchiang/Documents/PCB-Placement-Internship/build",
+  "command": "/usr/bin/clang++  -I/Users/bryanchiang/Documents/PCB-Placement-Internship/include -g -arch arm64 -o CMakeFiles/fp.dir/apps/fp.cpp.o -c /Users/bryanchiang/Documents/PCB-Placement-Internship/apps/fp.cpp",
+  "file": "/Users/bryanchiang/Documents/PCB-Placement-Internship/apps/fp.cpp",
+  "output": "CMakeFiles/fp.dir/apps/fp.cpp.o"
+}
+]

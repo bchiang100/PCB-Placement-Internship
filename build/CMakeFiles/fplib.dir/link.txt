@@ -1,0 +1,2 @@
+/usr/bin/ar qc libfplib.a CMakeFiles/fplib.dir/src/fplib.cpp.o
+/usr/bin/ranlib libfplib.a
