@@ -4,9 +4,10 @@
 
 #ifndef SIMULATEDANNEALING_H
 #define SIMULATEDANNEALING_H
-#define NUM_ITERATIONS 100000
-#define INITIAL_TEMP 1000
-#define COOLING_RATE 0.99
+#define NUM_ITERATIONS 1000000
+#define FAST_SA_C 100
+#define FAST_SA_K 7
+#define FAST_SA_P 0.90
 
 class SimulatedAnnealing {
     public:

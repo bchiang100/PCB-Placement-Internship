@@ -11,7 +11,7 @@ void Floorplanner::floorplan()
     netReadSuccess = readNetFile(_input_net);
     tree.buildTree(manager._blocks);
     tree.packFloorplan(manager._blocks);
-    calcNorms();
+    calcPerturbations();
     SimulatedAnnealing SA(this);
     SA.runFastSA();
 }
@@ -40,12 +40,54 @@ double Floorplanner::calcA(std::vector<Block> &blocks) {
     return greatestX * greatestY;
 }
 
-void Floorplanner::calcNorms() {
+void Floorplanner::calcPerturbations() {
     double totalArea = 0.0;
     double totalWirelength = 0.0;
+    std::vector<double> uphillCosts;
+
     int m = manager._blocks.size() * 10;
     BStarTree original = tree;
+    std::vector<Block> originalBlocks = manager._blocks;
+    
+      // DEBUG: Print initial state
+    std::cout << "=== DEBUG calcPerturbations ===" << std::endl;
+    std::cout << "Number of blocks: " << manager._blocks.size() << std::endl;
+    std::cout << "Number of perturbations (m): " << m << std::endl;
+    // Anorm and Wnorm calcs
+    for (int i = 0; i < m; i++) {
+        tree = original;
+        manager._blocks = originalBlocks;
+        
+        int operation = rand() % 3;
+        if (operation == 0) {
+            rotateOperation(*getTree(), manager._blocks);
+        } else if (operation == 1) {
+            moveOperation(*getTree(), manager._blocks);
+        } else {
+            swapOperation(*getTree(), manager._blocks);
+        }
+        
+        tree.packFloorplan(manager._blocks);
+        double currentArea = calcA(manager._blocks);
+        double currentWirelength = calcW(manager._nets);
+        totalArea += currentArea;
+        totalWirelength += currentWirelength;
+    }
+    Anorm = totalArea / m;
+    Wnorm = totalWirelength / m;
+
+
+    tree = original;
+    manager._blocks = originalBlocks;
+    //tree.packFloorplan(manager._blocks);
+    double costBefore = calcCost();  // Now this is the cost of the original state
+    
+    std::cout << "Initial cost: " << costBefore << std::endl;  // Move print here
+    
      for (int i = 0; i < m; i++) {
+        tree = original;
+        manager._blocks = originalBlocks;
+        //tree.packFloorplan(manager._blocks);
         int operation = rand() % 3;
         if (operation == 0) {
             rotateOperation(*getTree(), manager._blocks);
@@ -57,17 +99,35 @@ void Floorplanner::calcNorms() {
         
 
         tree.packFloorplan(manager._blocks);
-     
+        double costAfter = calcCost();
         double currentArea = calcA(manager._blocks);
         double currentWirelength = calcW(manager._nets);
-        
-        totalArea += currentArea;
-        totalWirelength += currentWirelength;
+        double deltaCost = costAfter - costBefore;
+        // DEBUG: Print first few perturbations
+        if (i < 10) {
+            std::cout << "Perturbation " << i << ": " 
+                     << "operation=" << operation 
+                     << ", costBefore=" << costBefore 
+                     << ", costAfter=" << costAfter 
+                     << ", deltaCost=" << deltaCost << std::endl;
+        }
+
+        if (deltaCost > 0) uphillCosts.push_back(deltaCost);
     }
     
-    Anorm = totalArea / m;
-    Wnorm = totalWirelength / m;
+      // DEBUG: Print results
+    std::cout << "Total uphillCosts found: " << uphillCosts.size() << " out of " << m << std::endl;
+    std::cout << "Anorm: " << Anorm << std::endl;
+    std::cout << "Wnorm: " << Wnorm << std::endl;
+    for (int i = 0; i < uphillCosts.size(); i++) {
+        averageUphillCost += uphillCosts[i];
+    }
+    if (uphillCosts.size() != 0) averageUphillCost /= uphillCosts.size();
+    
+std::cout << "Final averageUphillCost: " << averageUphillCost << std::endl;
+    std::cout << "=== END DEBUG ===" << std::endl;
     tree = original;
+    manager._blocks = originalBlocks;
     tree.packFloorplan(manager._blocks);
 }
 
@@ -422,8 +482,7 @@ void Floorplanner::swapOperation(BStarTree& tree, std::vector<Block>& blocks) {
 
 void SimulatedAnnealing::runFastSA()
 {
-    double temperature = INITIAL_TEMP;
-    double coolingRate = COOLING_RATE;
+    double temperature;
     int maxIterations = NUM_ITERATIONS;
     
     BStarTree* tree = _floorplanner->getTree();
@@ -440,27 +499,47 @@ void SimulatedAnnealing::runFastSA()
     int acceptedMoves = 0;
     int validSolutions = 0;
     bool foundValidSolution = false;
-    
+
+    double averageUphillCost = _floorplanner->getAverageUphillCost();
+    double P = FAST_SA_P;
+    double T1 = averageUphillCost / -log(P);
+    int c = FAST_SA_C;
+    int k = FAST_SA_K;
     clock_t startTime = clock();
     
     for (int i = 0; i < maxIterations; i++) {
 
+        // fast-sa temperature calculations
+        int n = i + 1;
+        if (n == 1) {
+            temperature = averageUphillCost / -log(P);
+        } else if (n >= 2 && n <= k) {
+            double deltaCost = averageUphillCost * 0.1;
+            temperature = T1 * deltaCost / (n * c);
+        } else {
+            double deltaCost = averageUphillCost * 0.1;
+            temperature = T1 * deltaCost / n;
+        }
+
+        // block operations
         std::vector<Block> originalBlocks = blocks;
         BStarTree originalTree = *tree;
-        
+
         int method = rand() % 3;
         if (method == 0) _floorplanner->moveOperation(*tree, blocks);
         else if (method == 1) _floorplanner->swapOperation(*tree, blocks);
         else if (method == 2) _floorplanner->rotateOperation(*tree, blocks);
         
         double newCost = _floorplanner->calcCost();
-    
+        
+
         bool isValid = checkOutlineValidity() && !checkOverlap();
         if (isValid) {
             validSolutions++;
             foundValidSolution = true;
         }
         
+        // solution acceptance
         if (acceptSolution(newCost, currentCost, temperature)) {
             currentBlocks = blocks;
             currentTree = *tree;
@@ -477,7 +556,6 @@ void SimulatedAnnealing::runFastSA()
             *tree = originalTree;
         }
         
-        temperature *= coolingRate;
         
         if (i % 10000 == 0) {
             double acceptanceRate = (double)acceptedMoves / (i + 1) * 100;

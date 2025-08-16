@@ -17,7 +17,7 @@ public:
     int outlineHeight;
     int outlineWidth;
     void checkPlacementInformation() { manager.printInformation(); };
-    void calcNorms();
+    void calcPerturbations();
     double calcCost();
     double calcPenaltyCost();
     double calcOutlinePenalty();
@@ -28,6 +28,7 @@ public:
     int recordOutput(std::vector<Block>& blocks, const std::vector<Net>& nets, const std::vector<Terminal>& terminals, double bestCost, double runtime, std::string output);
     void calculateChipDimensions(std::vector<Block>& blocks, int* maxX, int* maxY);
     BStarTree* getTree() {return &tree;};
+    double getAverageUphillCost() { return averageUphillCost; };
 private:
     BStarTree tree;
     double _alpha;
@@ -37,6 +38,7 @@ private:
     double calcA(std::vector<Block>& blocks);
     double Wnorm;
     double Anorm;
+    double averageUphillCost = 0;
     bool isDescendant(TreeNode* target, TreeNode* dest);
 };
 
