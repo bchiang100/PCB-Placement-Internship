@@ -19,6 +19,9 @@ public:
     void checkPlacementInformation() { manager.printInformation(); };
     void calcNorms();
     double calcCost();
+    double calcPenaltyCost();
+    double calcOutlinePenalty();
+    double calcOverlapPenalty();
     void rotateOperation(BStarTree& tree, std::vector<Block>& blocks);
     void moveOperation(BStarTree& tree, std::vector<Block>& blocks);
     void swapOperation(BStarTree& tree, std::vector<Block>& blocks);

@@ -14,7 +14,6 @@ void Floorplanner::floorplan()
     calcNorms();
     SimulatedAnnealing SA(this);
     SA.runFastSA();
-    
 }
 
 double Floorplanner::calcW(std::vector<Net> &nets)
@@ -405,7 +404,6 @@ void Floorplanner::swapOperation(BStarTree& tree, std::vector<Block>& blocks) {
         }
     }
     
-    // Update children's parent pointers
     if (node1->left != nullptr) {
         node1->left->parent = node1;
     }
@@ -494,12 +492,6 @@ void SimulatedAnnealing::runFastSA()
                      << ", Accept%: " << acceptanceRate
                      << ", Valid%: " << validRate << std::endl;
         }
-        
-        if (i < 10) {
-            bool currentValid = checkOutlineValidity() && !checkOverlap();
-            std::cout << "  Debug Iter " << i << ": Cost " << currentCost 
-                     << " -> " << newCost << ", Valid: " << currentValid << std::endl;
-        }
     }
     
     clock_t endTime = clock();
@@ -532,10 +524,6 @@ void SimulatedAnnealing::runFastSA()
         std::cout << "Final current cost: " << currentCost << std::endl;
         std::cout << "Runtime: " << runtime << " seconds" << std::endl;
         std::cout << "Total accepted moves: " << acceptedMoves << std::endl;
-        std::cout << "Suggestions:" << std::endl;
-        std::cout << "- Increase outline size" << std::endl;
-        std::cout << "- Increase temperature or iterations" << std::endl;
-        std::cout << "- Check if blocks fit in outline at all" << std::endl;
         
         _floorplanner->recordOutput(
             _floorplanner->manager._blocks,
@@ -548,6 +536,23 @@ void SimulatedAnnealing::runFastSA()
         
         std::cout << "Debug output written to output.rpt (INVALID SOLUTION)" << std::endl;
     }
+}
+
+double Floorplanner::calcPenaltyCost() {
+    double baseCost = calcCost();
+    
+    double outlinePenalty = calcOutlinePenalty();
+    double overlapPenalty = calcOverlapPenalty();
+    
+    return baseCost + outlinePenalty + overlapPenalty;
+}
+
+double Floorplanner::calcOutlinePenalty() {
+
+}
+
+double Floorplanner::calcOverlapPenalty() {
+
 }
 
 bool SimulatedAnnealing::checkOutlineValidity() {
