@@ -137,31 +137,13 @@ public:
         return nullptr;
     }
 
-    void printInformation() {
-        std::cout << "Terminal size is " << _terminals.size() << std::endl;
-        std::cout << "Block size is " << _blocks.size() << std::endl;
-        for (size_t i = 0; i < _terminals.size(); i++) 
-        {
-            std::cout << "Terminal " << i + 1 << ": " <<_terminals[i].getName() << std::endl;
-        }
+    void printInformation();
 
-        for (size_t i = 0; i < _blocks.size(); i++)
-        {
-            std::cout << "Block " << i + 1 << ": " << _blocks[i].getName() << std::endl;
-        }
-
-        for (size_t i = 0; i < _nets.size(); i ++)
-        {
-            std::cout << "Netlist " << i + 1 << ": " << std::endl;
-            for (size_t j = 0; j < _nets[i].getTermList().size(); j++)
-            {
-                std::cout << _nets[i].getTermList()[j]->getName() << std::endl;
-            }
-        }
-    }
     const std::vector<Block> &getBlocks() const { return _blocks; }
     const std::vector<Terminal> &getTerminals() const { return _terminals; }
     const std::vector<Net> &getNets() const { return _nets; }
 };
+
+
 
 #endif // MODULE_H

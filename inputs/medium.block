@@ -1,0 +1,13 @@
+Outline: 200 150
+NumBlocks: 5
+NumTerminals: 4
+
+A 40 30
+B 35 25
+C 50 20
+D 30 40
+E 25 35
+T1 terminal 10 10
+T2 terminal 180 10
+T3 terminal 10 130
+T4 terminal 180 130

@@ -18,6 +18,7 @@ int main(int argc, char** argv)
         input_blk.open(argv[2], std::ios::in);
         input_net.open(argv[3], std::ios::in);
         output.open(argv[4], std::ios::out);
+        srand(time(nullptr));
         if (!input_blk) {
             std::cerr << "Cannot open the input file \"" << argv[2]
                  << "\". The program will be terminated..." << std::endl;
@@ -40,9 +41,10 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    Floorplanner* fp = new Floorplanner(input_blk, input_net);
+    Floorplanner* fp = new Floorplanner(alpha, input_blk, input_net);
     fp->floorplan();
     //fp->checkPlacementInformation();
+    
 
     return 0;
 }
